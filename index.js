@@ -4,7 +4,7 @@ let task = document.querySelector(".tasks");
 let deleteAll = document.querySelector(".delete");
 
 deleteAll.addEventListener("click", e =>{
-    localStorage.clear();
+    localStorage.removeItem("tasks");
     task.innerHTML = '';
 });
 
