@@ -1,25 +1,91 @@
-let task = document.querySelector(".tasks");
-let add = document.querySelector(".add");
 let input = document.querySelector(".input");
+let add = document.querySelector(".add");
+let task = document.querySelector(".tasks");
+let deleteAll = document.querySelector(".delete");
 
-add.addEventListener("click", (e) => {
-    let div = document.createElement("div");
-    let h3 = document.createElement("h3");
-    let btn = document.createElement("button");
-    let br = document.createElement("br");
-    
-    btn.innerHTML = "Delete";
-    h3.innerHTML = input.value;
-
-    div.style.cssText = "margin:1rem;display:flex; flex-direction:row; justify-content:space-between; align-items:center; border:solid 1px #ccc; background-color:#fff; padding:1rem"
-    btn.style.cssText = "height:2rem;padding-inline:1rem; margin-inline: 3rem;background: linear-gradient(0deg,hsl(0, 98%, 55%) 0%, hwb(0 30% 10%) 100%);box-shadow: rgba(100, 50, 5, .5) 0px -23px 25px 0px inset, rgba(20, 100, 100, 0.15) 0px -36px 30px 0px inset, rgba(20, 100, 100, 0.1) 0px -79px 40px 0px inset, rgb(221, 2, 2) 1px 1px 1px, rgba(250, 5, 5, 0.7) 2px 2px 2px, rgba(250, 8, 8, 0.6) 3px 3px 3px, rgba(250, 10, 10, 0.8) 6px 6px 8px, rgba(10, 10, 10, 0.2) 8px 8px 3px;outline: none;border: none;border-radius: .5rem;color: #fff;font-size: larger;font-weight: bolder;"
-    h3.style.cssText = "font-size: 1.5rem;font-weight: 900;font-family:monospace;color: #af0039;text-shadow: white;";
-
-    div.appendChild(h3);
-    div.appendChild(btn);
-    task.appendChild(div);
-    
-    btn.addEventListener("click", e => {
-        task.removeChild(div);
-    });
+deleteAll.addEventListener("click", e =>{
+    localStorage.clear();
+    task.innerHTML = '';
 });
+
+let arrOfTasks = [];
+
+if(window.localStorage.getItem("tasks")){
+    arrOfTasks = JSON.parse(window.localStorage.getItem("tasks"));
+}
+getDataFromLocalStorage();
+
+task.addEventListener("click", (e) =>{
+    if(e.target.classList.contains("del")){
+        deleteTask(e.target.parentElement.getAttribute("data-id"));
+        e.target.parentElement.remove();
+    }
+    if(e.target.classList.contains("task")){
+        toggleStatusTask(e.target.getAttribute("data-id"));
+        e.target.classList.toggle("done");
+    }
+});
+
+add.onclick = ()=>{
+    if (input.value !== ""){
+        addTask(input.value);
+        input.value = "";
+    };
+};
+
+function addTask (textTask){
+    const task ={
+        id : Date.now(),
+        title: textTask,
+        completed: false,
+    };
+    arrOfTasks.push(task);
+    addTaskToPage(arrOfTasks);
+    addToLocalStorage(arrOfTasks);
+};
+
+function addTaskToPage(arr){
+    task.innerHTML = "";
+    arr.forEach(el => {
+        let div = document.createElement("div");
+        div.className = "task";
+        if (el.completed){
+            div.className = "task done";
+        };
+        div.setAttribute("data-id",el.id);
+        div.setAttribute("id","divTask");
+        div.appendChild(document.createTextNode(el.title));
+        let btn = document.createElement("button");
+        btn.className = "del";
+        btn.setAttribute("id","buttonTask");
+        btn.appendChild(document.createTextNode("Delete"));
+        div.appendChild(btn);
+        task.appendChild(div);
+    });
+};
+
+function addToLocalStorage(arrOfTasks){
+    window.localStorage.setItem("tasks",JSON.stringify(arrOfTasks));
+};
+
+function getDataFromLocalStorage(){
+    let data = window.localStorage.getItem("tasks");
+    if (data){
+        let tasks = JSON.parse(data);
+        addTaskToPage(tasks);
+    };
+};
+
+function deleteTask(taskId){
+    arrOfTasks = arrOfTasks.filter((task)=>task.id != taskId);
+    addToLocalStorage(arrOfTasks);
+}
+
+function toggleStatusTask(taskId){
+    for(let i=0;i<arrOfTasks.length;i++){
+        if(arrOfTasks[i].id == taskId){
+            arrOfTasks[i].completed == false ?  arrOfTasks[i].completed = true: arrOfTasks[i].completed = false;
+        }
+    }
+    addToLocalStorage(arrOfTasks);
+}
